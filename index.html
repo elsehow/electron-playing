@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+  </head>
+  <body>
+    <h1>Hello World!</h1>
+    We are using node <script>document.write(process.versions.node)</script>,
+    Chrome <script>document.write(process.versions.chrome)</script>,
+    and Electron <script>document.write(process.versions.electron)</script>.
+  </body>
+  <script>
+
+// make a silly emitter
+var  charm = require('simple-charm')
+var process  = require('child_process').spawn('node', [__dirname + '/one-script.js'])
+
+// load our user's script
+var script = __dirname + '/script.js'
+// charm the script
+var charmed = charm(script, process.stdout, 'data')
+// we get back a stream of return values from script
+charmed.onValue(function (r) {
+  console.log('setting this shit up', r)
+  if (r) {
+    r.log('shit!!!')
+  }
+})
+
+  </script>
+</html>
