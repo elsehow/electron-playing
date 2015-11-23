@@ -1,3 +1,9 @@
+## next move
+
+setup a test script (like in notes) and imagine what SHOULD happen
+
+find the problems with that test script, and solve those too
+
 ## questions
 
 .
@@ -19,6 +25,12 @@ i say programs but we
 
 
 ## answers ?
+
+- why not live-reload setup AND process streams?
+
+how would this work?
+
+sounds like a hacked version of simple-charm
 
 - how does user setup streams?
 
