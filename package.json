@@ -3,11 +3,13 @@
   "version": "0.1.1",
   "main": "main.js",
   "scripts": {
-    "build-linux": "electron-packager . SpectralCharmer --platform=linux --arch=x64 --version=0.35.1 --out dist/ --overwrite --ignore=node_modules/electron-packager",
+    "build": "electron-packager app SpectralCharmer --arch=x64 --version=0.35.1 --out dist/ --overwrite --ignore=node_modules/electron-packager --platform",
+    "build-linux": "npm run build linux",
+    "build-mac": "npm run build darwin",
     "start": "electron ."
   },
   "dependencies": {
-    "a-bit-of": "^0.1.0"
+    "a-bit-of": "^0.2.1"
   },
   "devDependencies": {
     "electron-packager": "^5.1.1"

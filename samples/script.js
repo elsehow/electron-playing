@@ -1,9 +1,7 @@
-var abitof = require('a-bit-of')
-  , spawn = require('child_process').spawn
-  , EventEmitter = require('events').EventEmitter
+var charms = require('spectral-charms')
 
 function fakeEmitter () {
-  var emitter = new EventEmitter()
+  var emitter = new require('events').EventEmitter()
   var n = 0
   setInterval(function () {
     emitter.emit('number', n)
@@ -18,7 +16,7 @@ function setup () {
   var emitter = fakeEmitter()
 
   return [ 
-    abitof.kefir(emitter, 'number')
+    charms.stream(emitter, 'number')
   ]
 }
 

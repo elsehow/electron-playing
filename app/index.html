@@ -24,7 +24,7 @@ var abitof = require('a-bit-of')
 // after a file is loaded.
 function startUserScript (path) {
   // charm the script
-  var charmed = abitof.charm(path)
+  var charmed = abitof(path)
   // we get back a stream of return values from script
   charmed.on('return-val', function (r) {
     console.log('got a return value', r)
