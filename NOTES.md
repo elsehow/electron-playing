@@ -12,6 +12,8 @@ find the problems with that test script, and solve those too
 
 .- how do views work?
 
+- WHERE/HOW ARE ERRORS DISPLAYED???
+
 - how do we check/validate that API in the renderer process?
 
 - whats the vocabulary for user input? "scripts"? "programs"? 
@@ -22,29 +24,20 @@ i say programs but we
 
 ## answers ?
 
-- why not live-reload setup AND process streams?
-
-how would this work?
-
-sounds like a hacked version of simple-charm
-
 - how does user setup streams?
 
-    // setup.js
-    var port = serial('/dev/tty.MindWave')
-    var = serial('/dev/tty.MindWave')
-    return [port,  'data']
+this is up to our new dependency, a-bit-of
 
-    // multiple streams
-    return [ [port, 'data']
-             [socket, 'mindwave'] ]
+whats important is the pluggability!
 
 - what's the API for passing stuff to be rendered?
 
     // my-program.js
     module.exports = function (stream) {
       // do stuff to stream
-      return charm.views.Spectrogram(stream) 
+      return [
+        charm.views.Spectrogram(stream) 
+      ]
     }
 
 or multiple streams
@@ -71,6 +64,10 @@ they are a stream of hdom
       return hdom
     }
 
+**PROBLEMS WITH THIS ANSWER**
+
+how do we setup stuff like three.js? like rickshaw or d3?
+
 - why not live-reload setup AND process streams?
 
 well, it was confusing
@@ -82,7 +79,6 @@ besides, user's not going to be quite sure what will happen. DID i change setup(
 ## decisions
 
 renderer process responsible for simple-charming stuff
-
 
 
 ## notes

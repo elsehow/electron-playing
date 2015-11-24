@@ -13,17 +13,20 @@
   </body>
   <script>
 
-// make a silly emitter
+// a-bit-of handles the user scripts
 var abitof = require('a-bit-of')
 
-// load our user's script
-var script = __dirname + '/script.js'
-// charm the script
-var charmed = abitof.charm(script)
-// we get back a stream of return values from script
-charmed.on('return-val', function (r) {
-  console.log('got a return value', r)
-})
+// this gets executed by main process
+// after a file is loaded.
+function startUserScript (path) {
+  // charm the script
+  var charmed = abitof.charm(path)
+  // we get back a stream of return values from script
+  charmed.on('return-val', function (r) {
+    console.log('got a return value', r)
+  })
+}
+
 
   </script>
 </html>

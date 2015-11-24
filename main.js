@@ -24,13 +24,25 @@ app.on('ready', function() {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 800, height: 600});
 
-  // and load the index.html of the app.
+  // TODO make a 'recently-opened' dialogue
+  //
+  // show a dialog to pick a file
+  // const dialog = require('electron').dialog;
+  // console.log(dialog.showOpenDialog({ properties: [ 'openFile' ]}));
+
+  //// and load the index.html of the app.
   mainWindow.loadURL('file://' + __dirname + '/index.html');
+
+  // TODO - deprecate this. we'll be loading from the open dialogue
+  // setup webContents
+  var webContents = mainWindow.webContents
+  // setup the user script in the renderer process
+  webContents.executeJavaScript('startUserScript("'+userScript+'")')
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 
-  // Emitted when the window is closed.
+  //// Emitted when the window is closed.
   mainWindow.on('closed', function() {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
