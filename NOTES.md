@@ -1,4 +1,25 @@
-find the problems with that test script, and solve those too
+## next moves
+
+think: how do we import `spectral-charms` when we're sitting writing scripts?
+
+       where is this maintained?  (use existing elsehow/spectral-charmer)
+
+       whats its relationship to spectral-charmer? (just an API)
+
+      now, what might happen here is:
+
+      - a-bit-of has no kefir anymore
+
+      - wow api just got simpler and so did readme
+
+      - spectral-charms is its own thing - a starting point for writing plugins
+
+
+
+make: nice loading screen in html
+
+      recent files persist
+
 
 ## questions
 
@@ -14,10 +35,10 @@ find the problems with that test script, and solve those too
 
 - WHERE/HOW ARE ERRORS DISPLAYED???
 
-- how do we check/validate that API in the renderer process?
+- how do we check/validate script conventions?
 
 - whats the vocabulary for user input? "scripts"? "programs"? 
-i say programs but we
+i say SKETCH but we
 
 - whats a good tutorial / intro for the doxx and instructable ?
 
