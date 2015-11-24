@@ -1,11 +1,32 @@
+var abitof = require('a-bit-of')
+  , spawn = require('child_process').spawn
 
-function stringify (buff) {
-  return buff.toString()
+function setup () {
+
+  var process  = spawn('node', [__dirname + '/one-script.js'])
+
+  return [ 
+    abitof.kefir(process.stdout, 'data') 
+  ]
 }
 
-module.exports = function (ones) {
 
-  ones = ones.map(stringify)
+function process (ones) {
 
-  return ones
+  function stringify (buff) {
+    return buff.toString()
+  }
+
+  function timesTwo (x) {
+    return x*2
+  }
+
+  twos = ones.map(stringify).map(timesTwo)
+
+  return twos
+}
+
+module.exports = {
+  setup: setup,
+  process: process
 }

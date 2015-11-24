@@ -1,18 +1,14 @@
-## next move
-
-setup a test script (like in notes) and imagine what SHOULD happen
-
 find the problems with that test script, and solve those too
 
 ## questions
 
 .
 
-- why not live-reload setup AND process streams?
+.
 
 .- how does user setup streams?
 
-.- what's the API for passing stuff to be rendered?
+- what's the API for passing stuff to be rendered?
 
 .- how do views work?
 
@@ -75,7 +71,15 @@ they are a stream of hdom
       return hdom
     }
 
-decisions
+- why not live-reload setup AND process streams?
+
+well, it was confusing
+
+besides, user's not going to be quite sure what will happen. DID i change setup()?
+
+(ironically, v8 would be confused about the same thing. implementing this would take some crazy static code analysis, i think.)
+
+## decisions
 
 renderer process responsible for simple-charming stuff
 

@@ -14,19 +14,15 @@
   <script>
 
 // make a silly emitter
-var charm = require('simple-charm')
-var process  = require('child_process').spawn('node', [__dirname + '/one-script.js'])
+var abitof = require('a-bit-of')
 
 // load our user's script
 var script = __dirname + '/script.js'
 // charm the script
-var charmed = charm(script, process.stdout, 'data')
+var charmed = abitof.charm(script)
 // we get back a stream of return values from script
-charmed.onValue(function (r) {
-  console.log('setting this shit up', r)
-  if (r) {
-    r.log('shit!!!')
-  }
+charmed.on('return-val', function (r) {
+  console.log('got a return value', r)
 })
 
   </script>
