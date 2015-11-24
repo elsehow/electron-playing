@@ -25,28 +25,32 @@ app.on('ready', function() {
   mainWindow = new BrowserWindow({width: 800, height: 600});
 
   // TODO make a 'recently-opened' dialogue
-  //
-  // show a dialog to pick a file
-  // const dialog = require('electron').dialog;
-  // console.log(dialog.showOpenDialog({ properties: [ 'openFile' ]}));
+  const dialog = require('electron').dialog;
+  // force the user to select a file
+  dialog.showOpenDialog({ properties: [ 'openFile' ]}, function (userScript) {
+    // load index.html 
+    mainWindow.loadURL('file://' + __dirname + '/index.html');
+    // setup the user script in the renderer process
+    mainWindow.webContents.executeJavaScript('startUserScript("'+userScript+'")')
+    // Open the DevTools.                                                  })
+    mainWindow.webContents.openDevTools();
+    //// Emitted when the window is closed.
+    mainWindow.on('closed', function() {
+      // Dereference the window object, usually you would store windows
+      // in an array if your app supports multi windows, this is the time
+      // when you should delete the corresponding element.
+      mainWindow = null;
+    })
+})
 
-  //// and load the index.html of the app.
-  mainWindow.loadURL('file://' + __dirname + '/index.html');
 
-  // TODO - deprecate this. we'll be loading from the open dialogue
-  // setup webContents
-  var webContents = mainWindow.webContents
-  // setup the user script in the renderer process
-  webContents.executeJavaScript('startUserScript("'+userScript+'")')
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
 
-  //// Emitted when the window is closed.
-  mainWindow.on('closed', function() {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
-  });
+
+
+
+
+
+
+
 });

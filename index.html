@@ -13,6 +13,10 @@
   </body>
   <script>
 
+// require() correctly from index.html
+// from https://github.com/atom/electron/issues/2539#issuecomment-135247877
+require('module').globalPaths.push(__dirname + '/node_modules');
+
 // a-bit-of handles the user scripts
 var abitof = require('a-bit-of')
 

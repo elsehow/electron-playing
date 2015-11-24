@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "main": "main.js",
   "scripts": {
-    "build-linux": "electron-packager . SpectralCharmer --platform=linux --arch=x64 --version=0.35.1 --out dist/",
+    "build-linux": "electron-packager . SpectralCharmer --platform=linux --arch=x64 --version=0.35.1 --out dist/ --overwrite --ignore=node_modules/electron-packager",
     "start": "electron ."
   },
   "dependencies": {
