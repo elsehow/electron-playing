@@ -1,0 +1,16 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+
+html {
+  margin: 10px;
+  font-family: 'Roboto', sans-serif;
+}
+
+h1, h2 {
+  text-transform: uppercase;
+}
+
+h2 {
+  /*font-family: 'Cirmson Text', serif;*/
+  font-style: italic;
+  font-size: 1.3em;
+}

@@ -1,6 +1,8 @@
 const electron = require('electron');
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
+const dialog = require('electron').dialog;
+const ipcMain = require('electron').ipcMain;
 
 // Report crashes to our server.
 electron.crashReporter.start();
@@ -11,8 +13,6 @@ var mainWindow = null;
 
 // execute this when the user selects a script path
 function loadUserScript (scriptPath) {
-  // load index.html 
-  mainWindow.loadURL('file://' + __dirname + '/index.html');
   // setup the user script in the renderer process
   mainWindow.webContents.executeJavaScript('startUserScript("'+scriptPath+'")')
   // Open the DevTools.                                                
@@ -29,15 +29,21 @@ function loadUserScript (scriptPath) {
 function setup () {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 800, height: 600});
-  // force the user to select a file
-  // TODO make a 'recently-opened' dialogue
-  const dialog = require('electron').dialog;
+  // load index.html 
+  mainWindow.loadURL('file://' + __dirname + '/index.html');
+}
+
+// TODO make a 'recently-opened' dialogue
+// TODO make sure people can only select.js, only one at a time, etc
+function showOpenDialog () {
   // `showOpenDialogue` takes properties (of the fie selection dialogue)
   // and a callback that gets executed when a file is selected
-  // the callback takes the path of the item selected.
-  // TODO make sure people can only select.js, only one at a time, etc
   dialog.showOpenDialog({ properties: [ 'openFile' ] }, loadUserScript)
 }
+
+// setup ipc listeners
+ipcMain.on('open-file-dialog', showOpenDialog) 
+ipcMain.on('quit-app', app.quit) 
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {

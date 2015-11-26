@@ -1,25 +1,30 @@
-
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Hello World!</title>
+    <title>spectral charmer</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
-    <h1>Hello World!</h1>
-    We are using node <script>document.write(process.versions.node)</script>,
-    Chrome <script>document.write(process.versions.chrome)</script>,
-    and Electron <script>document.write(process.versions.electron)</script>.
+    <h1>spectral charmer</h1>
+    <h2>"it's the best!"</h2>
   </body>
   <script>
 
 // require() correctly from index.html
 // from https://github.com/atom/electron/issues/2539#issuecomment-135247877
 require('module').globalPaths.push(__dirname + '/node_modules');
+// make an ipc for the renderer process
+const ipcRenderer = require('electron').ipcRenderer
+// setup application menu
+const remote = require('electron').remote
+const Menu = remote.Menu
+var menuTemplate = require('./menu-template.js')(ipcRenderer)
+var menu = Menu.buildFromTemplate(menuTemplate)
+Menu.setApplicationMenu(menu)
 
 // a-bit-of handles the user scripts
 var abitof = require('a-bit-of')
-
 // this gets executed by main process
 // after a file is loaded.
 function startUserScript (path) {
@@ -30,7 +35,6 @@ function startUserScript (path) {
     console.log('got a return value', r)
   })
 }
-
 
   </script>
 </html>
