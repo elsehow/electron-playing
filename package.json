@@ -1,15 +1,16 @@
 {
   "name": "spectral-charmer",
   "version": "0.1.1",
-  "main": "main.js",
+  "main": "app/main.js",
   "scripts": {
-    "build": "electron-packager app SpectralCharmer --arch=x64 --version=0.35.1 --out dist/ --overwrite --ignore=node_modules/electron-packager --platform",
+    "build": "electron-packager . SpectralCharmer --arch=x64 --version=0.35.1 --out dist/ --overwrite --ignore=node_modules/(electron-packager|electron-prebuilt) --platform",
     "build-linux": "npm run build linux",
     "build-mac": "npm run build darwin",
-    "start": "electron ."
+    "start": "electron app/main.js"
   },
   "dependencies": {
-    "a-bit-of": "^0.2.1"
+    "a-bit-of": "^0.2.1",
+    "electron-prebuilt": "^0.35.1"
   },
   "devDependencies": {
     "electron-packager": "^5.1.1"

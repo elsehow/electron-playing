@@ -1,25 +1,12 @@
 ## next moves
 
-think: how do we import `spectral-charms` when we're sitting writing scripts?
+spend some time experimenting with views
 
-       where is this maintained?  (use existing elsehow/spectral-charmer)
+see what works see whats nice
 
-       whats its relationship to spectral-charmer? (just an API)
+see whats being written and where
 
-      now, what might happen here is:
-
-      - a-bit-of has no kefir anymore
-
-      - wow api just got simpler and so did readme
-
-      - spectral-charms is its own thing - a starting point for writing plugins
-
-
-
-make: nice loading screen in html
-
-      recent files persist
-
+and who needs to worry about it
 
 ## questions
 
@@ -97,38 +84,16 @@ besides, user's not going to be quite sure what will happen. DID i change setup(
 
 (ironically, v8 would be confused about the same thing. implementing this would take some crazy static code analysis, i think.)
 
-## decisions
+## wish listing
 
-renderer process responsible for simple-charming stuff
+make: a rest button to reload your current script, in charm
+      kind of a frame for your charms
 
+make: a nice welcome screen in html
+      select recent files
+      or open a new one
 
-## notes
+make: a new project generator!
+      like p5 has.
+      with npm stuff pre-bundled..
 
-.
-
-patches:
-  - bufftojson
-  - rate
-
-
-```javascript
-
-function setup () {
-  var port = serial('/dev/tty.MindWave')
-  return [ port, 'data' ]
-}
-
-function process (stream)  {
-  var ffts = stream.map(buffToList).map(fft)
-  return views.Spectrograph(ffts, 'my data')
-}
-
-
-module.exports = {
-  setup: setup,
-  process: process
-}
-
-```
-
-looks good to me...
