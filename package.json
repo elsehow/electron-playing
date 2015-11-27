@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "a-bit-of": "^0.2.1",
+    "compute-stdev": "^1.0.0",
     "electron-prebuilt": "^0.35.1"
   },
   "devDependencies": {

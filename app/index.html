@@ -8,33 +8,7 @@
   <body>
     <h1>spectral charmer</h1>
     <h2>"it's the best!"</h2>
+    <div id="views"> </div>
   </body>
-  <script>
-
-// require() correctly from index.html
-// from https://github.com/atom/electron/issues/2539#issuecomment-135247877
-require('module').globalPaths.push(__dirname + '/node_modules');
-// make an ipc for the renderer process
-const ipcRenderer = require('electron').ipcRenderer
-// setup application menu
-const remote = require('electron').remote
-const Menu = remote.Menu
-var menuTemplate = require('./menu-template.js')(ipcRenderer)
-var menu = Menu.buildFromTemplate(menuTemplate)
-Menu.setApplicationMenu(menu)
-
-// a-bit-of handles the user scripts
-var abitof = require('a-bit-of')
-// this gets executed by main process
-// after a file is loaded.
-function startUserScript (path) {
-  // charm the script
-  var charmed = abitof(path)
-  // we get back a stream of return values from script
-  charmed.on('return-val', function (r) {
-    console.log('got a return value', r)
-  })
-}
-
-  </script>
+  <script src="app.js"> </script>
 </html>
