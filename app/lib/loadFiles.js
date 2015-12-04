@@ -1,7 +1,11 @@
 var path = require('path')
   , fs = require('fs')
   , _ = require('lodash')
+  , Gaze = require('gaze')
+  , check = require('syntax-error')
+  , gazers = []
 
+// asynchronously check if all `files` exist
 function filesExist (files, cb) {
   var err = null
   var filesDoExist = _.reduce(files, 
@@ -20,13 +24,14 @@ function filesExist (files, cb) {
   cb(err, filesDoExist)
 }
 
-// returns an object
+// calls cb on an object
 // 
 // {
 //   originPath: path
 //   transformPath: path
 //   endpointPath: path
 // }
+//
 function loadFiles (dir, cb) {
   var files = {
     originPath: 'origin.js',
@@ -42,7 +47,49 @@ function loadFiles (dir, cb) {
     else
       cb(err, null)
   })
-  // if the file exists, add it to the return object
 }
 
-module.exports = loadFiles
+function uncache (moduleName) {
+  delete require.cache[moduleName]
+}
+
+function callbackOnChange (path, cb) {
+  var gaze = new Gaze(path)
+  gazers.push(gaze)
+  gaze.on('changed', cb)
+}
+
+function pathIfSyntaxOk (path, errCb) {
+  var err = check(path, path)
+  if (err) {
+    errCb(err)
+    return
+  }
+  return path
+}
+
+function functionIfSyntaxOk (path, errCb) {
+  uncache(path)
+  return require(pathIfSyntaxOk(path, errCb))
+}
+
+// untested
+function initializeAndWatch (initializer, path) {
+  var c = new initializer(path)
+  callbackOnChange(path, () => {
+    var fn = functionIfSyntaxOk(path)
+    if (fn)
+      c.update(fn)
+  })
+}
+
+
+module.exports = { 
+  // private
+  _loadFiles: loadFiles,
+  _uncache: uncachek
+  _callbackOnChange: callbackOnChange,
+  // public
+  gazers: gazers
+  initializeAndWatch: initializeAndWatch
+}

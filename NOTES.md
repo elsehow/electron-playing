@@ -14,13 +14,18 @@ loadDir(dir, (err, res) => {
   origin.attach(transform).attach(endpoint)
 })
 
-
+// this function will initialize `initializer`
+// using a function exposed via `require(path`
+// if the file at `path` changes, it'll magically re-require it
+// checking its syntax
+// and emitting any errors over `emitError`
 makeAndWatch(initializer, path) {
   // handle syntax errors
   function pathIfSyntaxOk () {
     return checkSyntax(path, emitError))
   }
   function functionIfSyntaxOk () {
+    _uncache(path)
     return require(pathIfSyntaxOk())
   }
   watch(path).on('change', () => {
