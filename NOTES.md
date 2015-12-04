@@ -1,19 +1,4 @@
 
-## loading a directory loadDir(dir, cb)
-
-```javascript
-{
-  originPath: 'origin.js'
-  transformPath: 'transform.js'
-  endpointPath: 'endpoint.js'
-}
-```
-=>
-
-same but with full paths attached
-check that they are all files
-
-
 ```javascript
 loadDir(dir, (err, res) => {
   // handle error
@@ -44,11 +29,13 @@ makeAndWatch(initializer, path) {
   })
   return c
 }
-```javascript
+```
 
 
 
-
+stil outstanding (but not my problem here):
+- validation + erroring in charmer
+i say, take an error callback....
 
 
 
