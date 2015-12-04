@@ -3,6 +3,7 @@
   "version": "0.1.1",
   "main": "app/main.js",
   "scripts": {
+    "test": "node test/spec/loadFiles.js | tap-spec",
     "build": "electron-packager . SpectralCharmer --arch=x64 --version=0.35.1 --out dist/ --overwrite --ignore=node_modules/(electron-packager|electron-prebuilt) --platform",
     "build-linux": "npm run build linux",
     "build-mac": "npm run build darwin",
@@ -11,10 +12,13 @@
   "dependencies": {
     "a-bit-of": "^0.2.1",
     "compute-stdev": "^1.0.0",
-    "electron-prebuilt": "^0.35.1"
+    "electron-prebuilt": "^0.35.1",
+    "lodash": "^3.10.1"
   },
   "devDependencies": {
-    "electron-packager": "^5.1.1"
+    "electron-packager": "^5.1.1",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.2.2"
   },
   "repository": {
     "type": "git",

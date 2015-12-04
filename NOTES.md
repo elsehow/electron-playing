@@ -1,3 +1,66 @@
+
+## loading a directory loadDir(dir, cb)
+
+```javascript
+{
+  originPath: 'origin.js'
+  transformPath: 'transform.js'
+  endpointPath: 'endpoint.js'
+}
+```
+=>
+
+same but with full paths attached
+check that they are all files
+
+
+```javascript
+loadDir(dir, (err, res) => {
+  // handle error
+  if (err) {
+    emitError(err)
+    return
+  }
+  // set up components
+  origin    = makeAndWatch(Origin, res.orginPath)
+  transform = makeAndWatch(Transform, res.transformPath)
+  endpoint  = makeAndWatch(Endpoint, res.endpointPath) 
+  // wire em up
+  origin.attach(transform).attach(endpoint)
+})
+
+
+makeAndWatch(initializer, path) {
+  // handle syntax errors
+  function pathIfSyntaxOk () {
+    return checkSyntax(path, emitError))
+  }
+  function functionIfSyntaxOk () {
+    return require(pathIfSyntaxOk())
+  }
+  watch(path).on('change', () => {
+    // TODO: c.update(path, emitError)
+    c.update(functionIfSyntaxOk)
+  })
+  return c
+}
+```javascript
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+last week -
+
 ## next moves
 
 spend some time experimenting with views
