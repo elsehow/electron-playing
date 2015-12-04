@@ -87,9 +87,9 @@ function initializeAndWatch (initializer, path) {
 module.exports = { 
   // private
   _loadFiles: loadFiles,
-  _uncache: uncachek
+  _uncache: uncache,
   _callbackOnChange: callbackOnChange,
   // public
-  gazers: gazers
+  gazers: gazers,
   initializeAndWatch: initializeAndWatch
 }
