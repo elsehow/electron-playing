@@ -14,6 +14,7 @@
     "compute-stdev": "^1.0.0",
     "electron-prebuilt": "^0.35.1",
     "gaze": "^0.5.2",
+    "kefir": "^3.1.0",
     "lodash": "^3.10.1",
     "syntax-error": "^1.1.4"
   },

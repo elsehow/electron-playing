@@ -21,7 +21,7 @@ loadDir(dir, (err, res) => {
 // and emitting any errors over `emitError`
 makeAndWatch(initializer, path) {
   // handle syntax errors
-  function pathIfSyntaxOk () {
+  function pathI    fSyntaxOk () {
     return checkSyntax(path, emitError))
   }
   function functionIfSyntaxOk () {
