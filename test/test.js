@@ -8,12 +8,14 @@ var test = require('tape')
   , file = (p, f) => path.join(p, f)
 
 // dir paths
-var goodPath          = pathTo('/samples/good')
-var goodPath2         = pathTo('/samples/good2')
-var badPath           = pathTo('/samples')
+var goodPath            = pathTo('/samples/good')
+var goodPath2           = pathTo('/samples/good2')
+var badPath             = pathTo('/samples')
+var badSyntaxPath       = pathTo('/samples/bad-syntax')
 // file paths
-var goodOriginPath    = file(goodPath, 'origin.js')
-var goodOriginPath2   = file(goodPath2, 'origin.js')
+var goodOriginPath      = file(goodPath, 'origin.js')
+var goodOriginPath2     = file(goodPath2, 'origin.js')
+var badSyntaxOriginPath = file(badSyntaxPath, 'origin.js')
 
 // setup for tests
 utils.setupTests()
@@ -57,34 +59,23 @@ test('_uncache(path) will allow us to re-require a file without cacheing it', (t
   })
 })
 
-test('_fnOnChange(path, fn, cb) will do cb on change', (t) => {
-  utils.setupTests()
-  fns._fnOnChange(goodOriginPath, path => {
-    t.ok(true, 'cb was called')
-    t.end()
-  }, (err, watcher) => {
-    t.notOk(err, 'setup correctly')
-    t.ok(watcher, 'setup correctly')
-    utils.copyFile(goodOriginPath2, goodOriginPath, () => null)
-  })
-})
+// make a fake class to initialize
+// has a fn and an update() method
+// should initialize a class instance on path
+class FakeClass {
+  constructor (fn) {
+    this.update(fn)
+  }
+  update (fn) {
+    this._fn = fn
+  }
+}
 
 test('_initializeAndWatch(initializer, path) works on initialization and file change', (t) => {
   // setup test files
   utils.setupTests()
-  // make a fake class to initialize
-  // has a fn and an update() method
-  class FakeClass {
-    constructor (fn) {
-      this.update(fn)
-    }
-    update (fn) {
-      this._fn = fn
-    }
-  }
   // make a stream of components...
   var componentS = fns._initializeAndWatch(FakeClass, goodOriginPath)
-  // should initialize a class instance on path
   // getting fn from whatever path exports
   function testGoodInitialize (cb) {
     t.ok(componentS._dispatcher, 'should get a stream back.')
@@ -93,17 +84,18 @@ test('_initializeAndWatch(initializer, path) works on initialization and file ch
       componentS.offValue(checkComponent)
     }
     componentS.onValue(checkComponent)
+    cb()
   }
   // when we change the file with which our component was made 
   // we should call update on the function.')
-  function testGoodUpdate () {
+  function testGoodUpdate (cb) {
     function checkNewComponent (component) {
       t.ok(component, 'component ok')
       fns._uncache(goodOriginPath)
       var expectedFn = require(goodOriginPath)
       t.deepEqual(component._fn.toString(), expectedFn.toString(), 'component._fn is what we\'d expect from new path')
       componentS.offValue(checkNewComponent)
-      t.end()
+      cb()
     }
     componentS.onValue(checkNewComponent)
     // copy origin2 to origin1
@@ -111,22 +103,41 @@ test('_initializeAndWatch(initializer, path) works on initialization and file ch
       t.ok(true, 'copied file')
     })
   }
-
-  // TODO: error thru stream when `path` can't be required
-
-  // TODO error thru stream when we update with some bad syntax file
-
-  testGoodInitialize()
-  testGoodUpdate()
+  testGoodInitialize(() =>
+    testGoodUpdate(() => 
+      t.end()))
 })
 
 
+test('_initializeAndWatch(initializer, path) emits errors on a bad path', (t) => {
+  var componentS = fns._initializeAndWatch(FakeClass, badPath)
+  componentS.onError((err) => {
+    console.log('an error i expected to see:', err)
+    t.ok(err, 'emits an error')
+    t.end()
+  })
+  componentS.onValue((v) => {
+    t.notOk(v, 'doesnt emit a value')
+  })
+})
+
+test('_initializeAndWatch(initializer, path) emits errors on bad syntax', (t) => {
+  var componentS = fns._initializeAndWatch(FakeClass, badSyntaxOriginPath)
+  componentS.onError((err) => {
+    console.log('an error i expected to see:', err)
+    t.ok(err, 'emits an error')
+    t.end()
+  })
+  componentS.onValue((v) => {
+    t.notOk(v, 'doesnt emit a value')
+  })
+})
+
 test('wireComponents(dir, cb) should set up components from a directory of origin.js, transform.js, endpoint.js', (t) => {
-  // test with a good dir we expect to see successCb from
+  // test with a good dir 
   // should see { origin, transform, endpoint }
-  // test with a bad dir we expect to see errorCb from
+  // test with a bad dir 
   // should see an error
-  // successCb shouldn't fire
   t.end()
 })
 

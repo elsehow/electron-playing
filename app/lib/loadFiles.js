@@ -56,12 +56,20 @@ function uncache (moduleName) {
   delete require.cache[moduleName]
 }
 
-// calls fn when path changes
-// does cb when it's set up
-function fnOnChange (path, fn, cb) {
-  var gaze = new Gaze(path, cb)
-  gazers.push(gaze)
-  gaze.on('changed', fn)
+// a stream that pushes the path every time the file changes
+function fileChangeS (path) {
+  return Kefir.stream((emitter) => {
+    var gaze = new Gaze(path, (err, watcher) => {
+      if (err) 
+        emitter.error(err) 
+      else
+        emitter.emit(path)
+    })
+    gazers.push(gaze)
+    gaze.on('changed', () => {
+      emitter.emit(path)
+    })
+  })
 }
 
 
@@ -72,18 +80,28 @@ function fnOnChange (path, fn, cb) {
 // returns null
 function idempotentRequireIfSyntaxOk (path, cb) {
   // returns `path` if (js) syntax of the file at `path` is ok
-  function pathIfSyntaxOk (path, cb) {
-    var err = check(path, path)
+  fs.readFile(path, (err, src) => {
     if (err) {
-      cb(null, err)
+      cb(err, null)
       return
     }
-    return path
-  }
-  // idempotently require the file
-  uncache(path)
-  var x = require(pathIfSyntaxOk(path, cb))
-  cb(null, x)
+    var err = check(src, path)
+    if (err) {
+      cb(err, null)
+      return
+    }
+    // idempotently require the file
+    // try to require it
+    try {
+      uncache(path)
+      var x = require(path, cb)
+      cb(null, x)
+      return
+    } catch (err) {
+      cb(err, null)
+      return
+    }
+  })
   return
 }
 
@@ -96,23 +114,17 @@ function idempotentRequireIfSyntaxOk (path, cb) {
 function initializeAndWatch (ComponentInitializer, path) {
   // make a component on the fn
   var c = new ComponentInitializer()
-  function updateComponentFn (nodeStyleCb) {
-    idempotentRequireIfSyntaxOk(path, (err, fn) => {
-      if (err) { 
-        nodeStyleCb(err, null)
-        return
-      }
+
+ return fileChangeS(path)
+    .flatMap((path) => {
+      return Kefir.fromNodeCallback((cb) => {
+        idempotentRequireIfSyntaxOk(path, cb)
+      })
+    })
+    .map((fn) => {
       c.update(fn)
-      nodeStyleCb(err, c)
+      return c
     })
-  }
-  var initComponentS = Kefir.fromNodeCallback(updateComponentFn)
-  var updateComponentS = Kefir.fromNodeCallback((streamCb) => {
-    fnOnChange(path, updateComponentFn, (err, _) => {
-      updateComponentFn(streamCb)
-    })
-  })
-  return initComponentS.merge(updateComponentS)
 }
 
 // this is the public fn of this module
@@ -171,7 +183,6 @@ module.exports = {
   // private
   _loadFiles: loadFiles,
   _uncache: uncache,
-  _fnOnChange: fnOnChange,
   _gazers: gazers, 
   _initializeAndWatch: initializeAndWatch,
   // public
