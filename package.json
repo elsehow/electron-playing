@@ -10,7 +10,7 @@
     "start": "electron app/main.js"
   },
   "dependencies": {
-    "a-bit-of": "^0.2.1",
+    "a-bit-of": "^2.0.3",
     "compute-stdev": "^1.0.0",
     "electron-prebuilt": "^0.35.1",
     "gaze": "^0.5.2",

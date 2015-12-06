@@ -12,9 +12,9 @@ electron.crashReporter.start();
 var mainWindow = null;
 
 // execute this when the user selects a script path
-function loadUserScript (scriptPath) {
+function loadUserScripts (dir) {
   // setup the user script in the renderer process
-  mainWindow.webContents.executeJavaScript('startUserScript("'+scriptPath+'")')
+  mainWindow.webContents.executeJavaScript('rendererBootstrap("'+dir+'")')
   // Open the DevTools.                                                
   mainWindow.webContents.openDevTools();
   //// Emitted when the window is closed.
@@ -38,7 +38,7 @@ function setup () {
 function showOpenDialog () {
   // `showOpenDialogue` takes properties (of the fie selection dialogue)
   // and a callback that gets executed when a file is selected
-  dialog.showOpenDialog({ properties: [ 'openFile' ] }, loadUserScript)
+  dialog.showOpenDialog({ properties: [ 'openDirectory' ] }, loadUserScripts)
 }
 
 // setup ipc listeners

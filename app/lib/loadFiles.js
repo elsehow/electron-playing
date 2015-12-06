@@ -4,6 +4,7 @@ var path = require('path')
   , Gaze = require('gaze')
   , Kefir = require('kefir')
   , check = require('syntax-error')
+  , abitof = require('a-bit-of')
   // list of processes that watch for file changes. 
   // package "gaze" on npm
   , gazers = []
@@ -24,7 +25,10 @@ function filesExist (files, cb) {
     return false
   }
   var filesDoExist = _.reduce(files, checkFiles)
-  cb(err, filesDoExist)
+  if (filesDoExist)
+    cb(err, files)
+  else
+    cb('This directory doesn\'t look right. Directories should have three files: origin.js, transform.js, endpoint.js.', null)
 }
 
 // calls cb on an object
@@ -35,7 +39,7 @@ function filesExist (files, cb) {
 //   endpointPath: path
 // }
 //
-function loadFiles (dir, cb) {
+function loadFiles (dir) {
   var files = {
     originPath: 'origin.js',
     transformPath: 'transform.js',
@@ -44,24 +48,56 @@ function loadFiles (dir, cb) {
   // make a list of paths we expect to see
   var paths = _.mapValues(files, f => path.join(dir, f))
   // see if all the files we expect to see do, in fact, exist
-  filesExist(paths, (err, res) => {
-    if (res)
-      cb(null, paths)
-    else
-      cb(err, null)
-  })
+  return Kefir.fromNodeCallback(callback =>
+    filesExist(paths, callback))
 }
+
+// this is the public fn of this module
+// it takes a dir with files
+// origin.js, transform.js, endpoint.js
+// makes components of them, attaches them together,
+// and returns a stream of:
+//
+//    {
+//      originS        // stream of origin components
+//      transformS     // stream of transform components
+//      endpointS      // ...
+//    }
+//
+// (yes, it returns a stream of streams)
+//
+function wireComponents (dir) {
+  return loadFiles(dir)
+    .map((paths) => {
+      // set up components
+      return {
+        originS:      initializeAndWatch(abitof.Origin, paths.originPath),
+        transformS:   initializeAndWatch(abitof.Transform, paths.transformPath),
+        endpointS:    initializeAndWatch(abitof.Endpoint, paths.endpointPath),
+      }
+    })
+}
+
 
 function uncache (moduleName) {
   delete require.cache[moduleName]
 }
 
-// calls fn when path changes
-// does cb when it's set up
-function fnOnChange (path, fn, cb) {
-  var gaze = new Gaze(path, cb)
-  gazers.push(gaze)
-  gaze.on('changed', fn)
+// a stream that pushes the path every time the file changes
+function fileChangeS (path) {
+  return Kefir.stream((emitter) => {
+    var gaze = new Gaze(path, (err, watcher) => {
+      if (err) 
+        emitter.error(err) 
+      else {
+        emitter.emit(path)
+      }
+    })
+    gazers.push(gaze)
+    gaze.on('changed', () => {
+      emitter.emit(path)
+    })
+  })
 }
 
 
@@ -72,18 +108,28 @@ function fnOnChange (path, fn, cb) {
 // returns null
 function idempotentRequireIfSyntaxOk (path, cb) {
   // returns `path` if (js) syntax of the file at `path` is ok
-  function pathIfSyntaxOk (path, cb) {
-    var err = check(path, path)
+  fs.readFile(path, (err, src) => {
     if (err) {
-      cb(null, err)
+      cb(err, null)
       return
     }
-    return path
-  }
-  // idempotently require the file
-  uncache(path)
-  var x = require(pathIfSyntaxOk(path, cb))
-  cb(null, x)
+    var err = check(src, path)
+    if (err) {
+      cb(err, null)
+      return
+    }
+    // idempotently require the file
+    // try to require it
+    try {
+      uncache(path)
+      var x = require(path, cb)
+      cb(null, x)
+      return
+    } catch (err) {
+      cb(err, null)
+      return
+    }
+  })
   return
 }
 
@@ -94,71 +140,33 @@ function idempotentRequireIfSyntaxOk (path, cb) {
 // where stream is a stream of components over time
 //
 function initializeAndWatch (ComponentInitializer, path) {
+
   // make a component on the fn
-  var c = new ComponentInitializer()
-  function updateComponentFn (nodeStyleCb) {
-    idempotentRequireIfSyntaxOk(path, (err, fn) => {
-      if (err) { 
-        nodeStyleCb(err, null)
-        return
-      }
-      c.update(fn)
-      nodeStyleCb(err, c)
-    })
-  }
-  var initComponentS = Kefir.fromNodeCallback(updateComponentFn)
-  var updateComponentS = Kefir.fromNodeCallback((streamCb) => {
-    fnOnChange(path, updateComponentFn, (err, _) => {
-      updateComponentFn(streamCb)
+  var c; 
+
+  // make a stream of component errors
+  var componentErrorStream = Kefir.stream((emitter) => {
+    c = new ComponentInitializer((err) => {
+      emitter.error(err)
     })
   })
-  return initComponentS.merge(updateComponentS)
-}
 
-// this is the public fn of this module
-// it takes a dir with files
-// origin.js, transform.js, endpoint.js
-// makes components of them, attaches them together,
-// and calls cb on:
-//   
-//    cb(err, components)
-// 
-// where components is an object of streams:
-//
-//    {
-//      originS        // stream of origin components
-//      transformS     // stream of transform components
-//      endpointS      // ...
-//    }
-// 
-//
-function wireComponents (dir, cb) {
-  // load given dir
-  loadDir(dir, (err, res) => {
-    // on err, return null
-    if (err) {
-      cb(err, null)
-      return
-    }
-    // set up components
-    var originS       = initializeAndWatch(Origin, res.orginPath)
-    var transformS    = initializeAndWatch(Transform, res.transformPath)
-    var endpointS     = initializeAndWatch(Endpoint, res.endpointPath) 
-    // combine streams (all are async, we dont know in what order they'll come in)
-    Kefir.combine([originS, trasnformS, endpointS], (o, t, e) => {
-      // wire up components
-      origin
-        .attach(transform)
-        .attach(endpoint)
-      // return an obj with the components
-      cb(null, {
-        originS: originS,
-        transformS: transformS,
-        endpointS: endpointS,
+  // make a stream of components over tiem
+  var componentStream = fileChangeS(path)
+    .flatMap((path) => {
+      return Kefir.fromNodeCallback((cb) => {
+        idempotentRequireIfSyntaxOk(path, cb)
       })
     })
-  }) 
+    .map((fn) => {
+      c.update(fn)
+      return c
+    })
+
+    // merge this stream with the stream of errors
+    return Kefir.merge([componentStream, componentErrorStream])
 }
+
 
 // synchronous taredown function
 function taredown () {
@@ -171,7 +179,6 @@ module.exports = {
   // private
   _loadFiles: loadFiles,
   _uncache: uncache,
-  _fnOnChange: fnOnChange,
   _gazers: gazers, 
   _initializeAndWatch: initializeAndWatch,
   // public

@@ -1,48 +1,11 @@
 
-```javascript
-loadDir(dir, (err, res) => {
-  // handle error
-  if (err) {
-    emitError(err)
-    return
-  }
-  // set up components
-  origin    = makeAndWatch(Origin, res.orginPath)
-  transform = makeAndWatch(Transform, res.transformPath)
-  endpoint  = makeAndWatch(Endpoint, res.endpointPath) 
-  // wire em up
-  origin.attach(transform).attach(endpoint)
-})
+this week -
 
-// this function will initialize `initializer`
-// using a function exposed via `require(path`
-// if the file at `path` changes, it'll magically re-require it
-// checking its syntax
-// and emitting any errors over `emitError`
-makeAndWatch(initializer, path) {
-  // handle syntax errors
-  function pathI    fSyntaxOk () {
-    return checkSyntax(path, emitError))
-  }
-  function functionIfSyntaxOk () {
-    _uncache(path)
-    return require(pathIfSyntaxOk())
-  }
-  watch(path).on('change', () => {
-    // TODO: c.update(path, emitError)
-    c.update(functionIfSyntaxOk)
-  })
-  return c
-}
-```
+## next moves
 
+make an app with the new framework...
 
-
-stil outstanding (but not my problem here):
-- validation + erroring in charmer
-i say, take an error callback....
-
-
+use a graph.....
 
 
 
@@ -52,6 +15,13 @@ i say, take an error callback....
 
 
 last week -
+
+abitof refactor + tests for this
+
+
+
+
+two weeks ago -
 
 ## next moves
 
