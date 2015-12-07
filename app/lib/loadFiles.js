@@ -4,6 +4,7 @@ var path = require('path')
   , Gaze = require('gaze')
   , Kefir = require('kefir')
   , check = require('syntax-error')
+  , abitof = require('a-bit-of')
   // list of processes that watch for file changes. 
   // package "gaze" on npm
   , gazers = []
@@ -112,10 +113,19 @@ function idempotentRequireIfSyntaxOk (path, cb) {
 // where stream is a stream of components over time
 //
 function initializeAndWatch (ComponentInitializer, path) {
-  // make a component on the fn
-  var c = new ComponentInitializer()
 
- return fileChangeS(path)
+  // make a component on the fn
+  var c; 
+
+  // make a stream of component errors
+  var componentErrorStream = Kefir.stream((emitter) => {
+    c = new ComponentInitializer((err) => {
+      emitter.error(err)
+    })
+  })
+
+  // make a stream of components over tiem
+  var componentStream = fileChangeS(path)
     .flatMap((path) => {
       return Kefir.fromNodeCallback((cb) => {
         idempotentRequireIfSyntaxOk(path, cb)
@@ -125,51 +135,36 @@ function initializeAndWatch (ComponentInitializer, path) {
       c.update(fn)
       return c
     })
+
+    // merge this stream with the stream of errors
+    return Kefir.merge([componentStream, componentErrorStream])
 }
 
 // this is the public fn of this module
 // it takes a dir with files
 // origin.js, transform.js, endpoint.js
 // makes components of them, attaches them together,
-// and calls cb on:
-//   
-//    cb(err, components)
-// 
-// where components is an object of streams:
+// and returns a stream of:
 //
 //    {
 //      originS        // stream of origin components
 //      transformS     // stream of transform components
 //      endpointS      // ...
 //    }
-// 
 //
-function wireComponents (dir, cb) {
-  // load given dir
-  loadDir(dir, (err, res) => {
-    // on err, return null
-    if (err) {
-      cb(err, null)
-      return
-    }
+// (yes, it returns a stream of streams)
+//
+function wireComponents (dir) {
+  return Kefir.fromNodeCallback((cb) => {
+    loadFiles(dir, cb)
+  }).map((paths) => {
     // set up components
-    var originS       = initializeAndWatch(Origin, res.orginPath)
-    var transformS    = initializeAndWatch(Transform, res.transformPath)
-    var endpointS     = initializeAndWatch(Endpoint, res.endpointPath) 
-    // combine streams (all are async, we dont know in what order they'll come in)
-    Kefir.combine([originS, trasnformS, endpointS], (o, t, e) => {
-      // wire up components
-      origin
-        .attach(transform)
-        .attach(endpoint)
-      // return an obj with the components
-      cb(null, {
-        originS: originS,
-        transformS: transformS,
-        endpointS: endpointS,
-      })
-    })
-  }) 
+    return {
+      originS:      initializeAndWatch(abitof.Origin, paths.originPath),
+      transformS:   initializeAndWatch(abitof.Transform, paths.transformPath),
+      endpointS:    initializeAndWatch(abitof.Endpoint, paths.endpointPath),
+    }
+  })
 }
 
 // synchronous taredown function

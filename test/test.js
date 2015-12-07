@@ -6,6 +6,7 @@ var test = require('tape')
   , fns = require('../app/lib/loadFiles.js')
   , pathTo = (f) => path.join(__dirname, f)
   , file = (p, f) => path.join(p, f)
+  , Kefir = require('kefir')
 
 // dir paths
 var goodPath            = pathTo('/samples/good')
@@ -72,6 +73,7 @@ class FakeClass {
 }
 
 test('_initializeAndWatch(initializer, path) works on initialization and file change', (t) => {
+  t.plan(5)
   // setup test files
   utils.setupTests()
   // make a stream of components...
@@ -104,8 +106,8 @@ test('_initializeAndWatch(initializer, path) works on initialization and file ch
     })
   }
   testGoodInitialize(() =>
-    testGoodUpdate(() => 
-      t.end()))
+    testGoodUpdate(() => null))
+      
 })
 
 
@@ -133,14 +135,39 @@ test('_initializeAndWatch(initializer, path) emits errors on bad syntax', (t) =>
   })
 })
 
-test('wireComponents(dir, cb) should set up components from a directory of origin.js, transform.js, endpoint.js', (t) => {
-  // test with a good dir 
-  // should see { origin, transform, endpoint }
-  // test with a bad dir 
-  // should see an error
-  t.end()
+
+// NEXT STEP ---------------
+test('wireComponents(dir) should set up components from a directory of origin.js, transform.js, endpoint.js, and return a stream of objects containing streams of components over time', (t) => {
+  function handleErr (msg) {
+    return (err) => {
+      t.notOk(err, 'errors: ' + msg)
+    }
+  }
+  //test with a good dir 
+  var componentsS = fns.wireComponents(goodPath)
+  utils.setupTests()
+  componentsS.onValue((cs) => {
+    // should see { originS, transformS, endpointS }
+    t.ok(cs.originS, 'origin stream is ok')
+    t.ok(cs.transformS, 'transform stream is ok')
+    t.ok(cs.endpointS, 'endpoint stream is ok')
+    cs.originS.onError(handleErr('origin'))
+    cs.transformS.onError(handleErr('transform'))
+    cs.endpointS.onError(handleErr('endpoint'))
+    Kefir.combine([cs.originS, cs.transformS, cs.endpointS], (o, tr, e) => {
+      o.attach(tr).attach(e)
+      t.ok(o._outputs, 'origin is ok')
+      t.ok(tr._outputs, 'transform is ok')
+      t.ok(e._handlers, 'endpoint is ok')
+      t.end()
+    })
+    .onValue((_) => null) // need initial subscriber to start pulling
+  })
+  componentsS.onError(handleErr('components'))
 })
 
+  //test with a bad dir 
+  //should see an error
 
 test('clean up', t => {
   fns.taredown() 
