@@ -25,7 +25,10 @@ function filesExist (files, cb) {
     return false
   }
   var filesDoExist = _.reduce(files, checkFiles)
-  cb(err, filesDoExist)
+  if (filesDoExist)
+    cb(err, files)
+  else
+    cb('This directory doesn\'t look right. Directories should have three files: origin.js, transform.js, endpoint.js.', null)
 }
 
 // calls cb on an object
@@ -36,7 +39,7 @@ function filesExist (files, cb) {
 //   endpointPath: path
 // }
 //
-function loadFiles (dir, cb) {
+function loadFiles (dir) {
   var files = {
     originPath: 'origin.js',
     transformPath: 'transform.js',
@@ -45,13 +48,36 @@ function loadFiles (dir, cb) {
   // make a list of paths we expect to see
   var paths = _.mapValues(files, f => path.join(dir, f))
   // see if all the files we expect to see do, in fact, exist
-  filesExist(paths, (err, res) => {
-    if (res)
-      cb(null, paths)
-    else
-      cb(err, null)
-  })
+  return Kefir.fromNodeCallback(callback =>
+    filesExist(paths, callback))
 }
+
+// this is the public fn of this module
+// it takes a dir with files
+// origin.js, transform.js, endpoint.js
+// makes components of them, attaches them together,
+// and returns a stream of:
+//
+//    {
+//      originS        // stream of origin components
+//      transformS     // stream of transform components
+//      endpointS      // ...
+//    }
+//
+// (yes, it returns a stream of streams)
+//
+function wireComponents (dir) {
+  return loadFiles(dir)
+    .map((paths) => {
+      // set up components
+      return {
+        originS:      initializeAndWatch(abitof.Origin, paths.originPath),
+        transformS:   initializeAndWatch(abitof.Transform, paths.transformPath),
+        endpointS:    initializeAndWatch(abitof.Endpoint, paths.endpointPath),
+      }
+    })
+}
+
 
 function uncache (moduleName) {
   delete require.cache[moduleName]
@@ -63,8 +89,9 @@ function fileChangeS (path) {
     var gaze = new Gaze(path, (err, watcher) => {
       if (err) 
         emitter.error(err) 
-      else
+      else {
         emitter.emit(path)
+      }
     })
     gazers.push(gaze)
     gaze.on('changed', () => {
@@ -140,32 +167,6 @@ function initializeAndWatch (ComponentInitializer, path) {
     return Kefir.merge([componentStream, componentErrorStream])
 }
 
-// this is the public fn of this module
-// it takes a dir with files
-// origin.js, transform.js, endpoint.js
-// makes components of them, attaches them together,
-// and returns a stream of:
-//
-//    {
-//      originS        // stream of origin components
-//      transformS     // stream of transform components
-//      endpointS      // ...
-//    }
-//
-// (yes, it returns a stream of streams)
-//
-function wireComponents (dir) {
-  return Kefir.fromNodeCallback((cb) => {
-    loadFiles(dir, cb)
-  }).map((paths) => {
-    // set up components
-    return {
-      originS:      initializeAndWatch(abitof.Origin, paths.originPath),
-      transformS:   initializeAndWatch(abitof.Transform, paths.transformPath),
-      endpointS:    initializeAndWatch(abitof.Endpoint, paths.endpointPath),
-    }
-  })
-}
 
 // synchronous taredown function
 function taredown () {

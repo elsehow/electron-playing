@@ -21,19 +21,27 @@ var badSyntaxOriginPath = file(badSyntaxPath, 'origin.js')
 // setup for tests
 utils.setupTests()
 
+// unit tests ------------------------------------------------------------
+
 test('_loadFiles(path) loads a directory', (t) => {
+  t.plan(4)
   // good path is ok
-  fns._loadFiles(goodPath, (err, files) => {
-    t.notOk(err, 'good path should return no error')
+  var files = fns._loadFiles(goodPath)
+  files.onValue(files => {
     t.ok(files.originPath, 'good path should return originPath')
     t.ok(files.transformPath, 'good path should return transformPath')
     t.ok(files.endpointPath, 'good path should return endpointPath')
   })
+  files.onError(err => {
+    t.notOk(err, 'good path should return no error')
+  })
   // bad path is not ok
-  fns._loadFiles(badPath, (err, files) => {
-    t.ok(err, 'bad path should return an error')
-    t.notOk(files, 'bad path should return no files')
-    t.end()
+  var files2 = fns._loadFiles(badPath)
+  files2.onError(err => {
+    t.ok(err, 'bad path produces error')
+  })
+  files2.onValue(v => {
+    t.notOk(v, 'no value on a bad dir.')
   })
 })
 
@@ -136,7 +144,8 @@ test('_initializeAndWatch(initializer, path) emits errors on bad syntax', (t) =>
 })
 
 
-// NEXT STEP ---------------
+// integration tests -----------------------------------------------------------
+
 test('wireComponents(dir) should set up components from a directory of origin.js, transform.js, endpoint.js, and return a stream of objects containing streams of components over time', (t) => {
   function handleErr (msg) {
     return (err) => {
@@ -145,7 +154,6 @@ test('wireComponents(dir) should set up components from a directory of origin.js
   }
   //test with a good dir 
   var componentsS = fns.wireComponents(goodPath)
-  utils.setupTests()
   componentsS.onValue((cs) => {
     // should see { originS, transformS, endpointS }
     t.ok(cs.originS, 'origin stream is ok')
@@ -154,20 +162,39 @@ test('wireComponents(dir) should set up components from a directory of origin.js
     cs.originS.onError(handleErr('origin'))
     cs.transformS.onError(handleErr('transform'))
     cs.endpointS.onError(handleErr('endpoint'))
-    Kefir.combine([cs.originS, cs.transformS, cs.endpointS], (o, tr, e) => {
-      o.attach(tr).attach(e)
-      t.ok(o._outputs, 'origin is ok')
-      t.ok(tr._outputs, 'transform is ok')
-      t.ok(e._handlers, 'endpoint is ok')
+    componentsS.onError(handleErr('components'))
+    function doTest (ss) {
+      // attach them all
+      ss[0].attach(ss[1]).attach(ss[2])
+      // assure that the're all tied up correctly
+      t.deepEquals(ss[0]._downstream, ss[1], 'origin to transform')
+      t.deepEquals(ss[1]._downstream, ss[2], 'transfrom to endpoint')
+      components.offValue(doTest)
       t.end()
-    })
-    .onValue((_) => null) // need initial subscriber to start pulling
+    }
+    var components = Kefir
+      .combine([cs.originS, cs.transformS, cs.endpointS])
+    components
+      .onValue(doTest)
   })
-  componentsS.onError(handleErr('components'))
 })
 
+test('wireComponents(dir) should return a stream with an error if we pass a bad dir', (t) => {
   //test with a bad dir 
+  var componentsS = fns.wireComponents(badPath)
   //should see an error
+  fns.wireComponents(badPath).onValue(v =>
+    t.notOk(v, 'should see no value'))
+  fns.wireComponents(badPath).onError(err => {
+    console.log('an error i want to see', err)
+    t.ok(err, 'should see an error')
+    t.end()
+  })
+})
+
+test.skip('hierarchies should update as files change.')
+
+test.skip('if a file has bad syntax, we should catch that.')
 
 test('clean up', t => {
   fns.taredown() 

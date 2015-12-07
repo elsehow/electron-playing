@@ -4,6 +4,7 @@ var fs = require('fs')
 // copy stuff from tests/samples/templates into tests/samples/good
 function setupTests () {
   execSync('cp test/samples/template/origin.js test/samples/good/origin.js')
+  return
 }
 
 
