@@ -12,9 +12,9 @@ electron.crashReporter.start();
 var mainWindow = null;
 
 // execute this when the user selects a script path
-function loadUserScript (scriptPath) {
+function loadUserScripts (dir) {
   // setup the user script in the renderer process
-  mainWindow.webContents.executeJavaScript('startUserScript("'+scriptPath+'")')
+  mainWindow.webContents.executeJavaScript('startUserScript("'+dir+'")')
   // Open the DevTools.                                                
   mainWindow.webContents.openDevTools();
   //// Emitted when the window is closed.
