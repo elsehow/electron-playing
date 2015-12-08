@@ -4,7 +4,7 @@
   "main": "app/main.js",
   "scripts": {
     "test": "node test/test.js | tap-spec",
-    "build": "electron-packager . SpectralCharmer --arch=x64 --version=0.35.1 --out dist/ --overwrite --ignore=node_modules/(electron-packager|electron-prebuilt) --platform",
+    "build": "electron-packager . SpectralCharmer --arch=x64 --version=0.35.1 --out dist/ --overwrite --ignore=\"node_modules/(electron-packager|electron-prebuilt)\" --platform",
     "build-linux": "npm run build linux",
     "build-mac": "npm run build darwin",
     "start": "electron app/main.js"

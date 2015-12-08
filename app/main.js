@@ -16,7 +16,7 @@ function loadUserScripts (dir) {
   // setup the user script in the renderer process
   mainWindow.webContents.executeJavaScript('rendererBootstrap("'+dir+'")')
   // Open the DevTools.                                                
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
   //// Emitted when the window is closed.
   mainWindow.on('closed', function() {
     // Dereference the window object, usually you would store windows
@@ -28,7 +28,7 @@ function loadUserScripts (dir) {
 
 function setup () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600});
+  mainWindow = new BrowserWindow({width: 500, height: 900});
   // load index.html 
   mainWindow.loadURL('file://' + __dirname + '/index.html');
 }

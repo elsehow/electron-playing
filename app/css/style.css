@@ -4,6 +4,7 @@ html {
   margin: 10px;
   font-family: 'Roboto', sans-serif;
   font-size: 0.7em;
+  width:100%;
 }
 
 h1, h2 {
@@ -15,3 +16,103 @@ h2 {
   font-style: italic;
   font-size: 1.3em;
 }
+
+
+/* messages */
+
+#message-container {
+  min-height: 70px;
+  position: absolute;
+  bottom: 10vh;
+  left: 0px;
+  z-index: 9999999;
+}
+
+#message {
+  float:left;
+  overflow: hidden;
+  width:700px;
+  color: #fff;
+  font-family: monospace;
+  font-size: 12pt;
+  font-style: italic;
+  margin: 17px;
+}
+
+#message img {
+  float: left;
+}
+
+#message p {
+  float: left;
+}
+
+#message-container.shown {
+  width: 100%;
+  opacity: 1;
+  -webkit-transition-property: opacity width height background-color;
+  -webkit-transition-duration: 0.5s;
+  -webkit-transition-timing-function: ease;
+  transition-property: opacity width height background-color;
+  transition-duration: 0.5s;
+  transition-timing-function: ease;
+}
+
+#message-container.hidden {
+  width: 0%;
+  opacity: 0;
+  width: 50px;
+  visibility: hidden;
+  -webkit-transition-property: opacity width height background-color;
+  -webkit-transition-duration: 0.7s;
+  -webkit-transition-timing-function: ease;
+  transition-property: opacity width height background-color;
+  transition-duration: 0.7s;
+  transition-timing-function: ease;
+}
+
+#message.shown {
+  opacity: 1;
+  padding-left: 0px;
+  -webkit-transition-property: padding-left opacity;
+  -webkit-transition-duration: 0.1s;
+  -webkit-transition-timing-function: ease;
+}
+
+#message.hidden {
+  opacity: 0;
+  padding-left: 30px;
+  -webkit-transition-property: padding-left opacity;
+  -webkit-transition-duration: 1.5s;
+  -webkit-transition-timing-function: ease;
+}
+
+
+
+/* success */
+
+#message-container.success {
+  height: 80px;
+}
+
+#message-container.success.green {
+  background-color: #37CC96;
+}
+
+#message-container.success.blue {
+  background-color: blue;
+}
+
+
+/* error */
+
+#message-container.error.shown {
+  background-color: #E01E1E;
+}
+
+#message-container.error.hidden {
+  background-color: yellow;
+}
+
+
+
