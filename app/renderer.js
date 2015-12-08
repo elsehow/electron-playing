@@ -13,13 +13,6 @@ var menuTemplate = require('./lib/menu-template.js')(ipcRenderer)
 var menu = Menu.buildFromTemplate(menuTemplate)
 Menu.setApplicationMenu(menu)
 
-// higher-order function for error handling
-function handleError (errorType) {
-  return function (err) { 
-    console.log('ERROR', errorType, err)
-  }
-}
-
 // a-bit-of handles the user scripts
 var loadFiles = require('./lib/loadFiles.js')
 // this gets executed by main process
