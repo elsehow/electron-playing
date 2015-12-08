@@ -3,9 +3,9 @@ this week -
 
 ## next moves
 
-start loading directories in the electron app
+make an app with the new framework...
 
-use spectral-charms
+use a graph.....
 
 
 
