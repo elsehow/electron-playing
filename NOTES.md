@@ -3,9 +3,13 @@ this week -
 
 ## next moves
 
+errors + refresh notifactions
+
 make an app with the new framework...
 
-use a graph.....
+make some spectral charms...
+
+web workers? https://github.com/substack/webworkify
 
 
 
