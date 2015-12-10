@@ -9,12 +9,21 @@ const ipcRenderer = require('electron').ipcRenderer
 // setup application menu
 const remote = require('electron').remote
 const Menu = remote.Menu
+const Kefir = require('kefir')
 var menuTemplate = require('./lib/menu-template.js')(ipcRenderer)
 var menu = Menu.buildFromTemplate(menuTemplate)
 Menu.setApplicationMenu(menu)
 
+// manage messages to the user
+var messages = require('./lib/manage-messages.js')
+
+function handleError (type) {
+  return (err) => 
+    messages.error(type + ': ' + err)
+}
+
 // a-bit-of handles the user scripts
-var loadFiles = require('./lib/loadFiles.js')
+var loadFiles = require('./lib/load-files.js')
 // this gets executed by main process
 // after the user loads a script file.
 function rendererBootstrap (path) {
@@ -26,13 +35,17 @@ function rendererBootstrap (path) {
     cs.transformS.onError(handleError('transform'))
     cs.endpointS.onError(handleError('endpoint'))
     // attach them to each other when they all come in
-    require('kefir')
+    Kefir
       .combine([cs.originS, cs.transformS, cs.endpointS])
       .onValue(components => {
         components[0]
           .attach(components[1])
           .attach(components[2])
       })
+    // setup notifications for new refreshes
+    Kefir
+      .merge([cs.originS, cs.transformS, cs.endpointS])
+      .onValue(messages.success)
   })
   // setup erroring for file loading
   componentStream.onError(handleError('loading files'))
