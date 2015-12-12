@@ -3,4 +3,4 @@ node_modules/
 .*.swo
 .DS_Store
 
-dist/*
+dist/SpectralCharmer-*

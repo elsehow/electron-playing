@@ -5,8 +5,9 @@
   "scripts": {
     "test": "node test/test.js | tap-spec",
     "build": "electron-packager . SpectralCharmer --arch=x64 --version=0.35.1 --out dist/ --overwrite --ignore=\"node_modules/(electron-packager|electron-prebuilt)\" --platform",
+    "prepare-mac-build": "./dist/set-mac-icon.sh",
     "build-linux": "npm run build linux",
-    "build-mac": "npm run build darwin",
+    "build-mac": "npm run build darwin && npm run prepare-mac-build",
     "start": "electron app/main.js"
   },
   "dependencies": {
