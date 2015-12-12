@@ -17,30 +17,43 @@ Menu.setApplicationMenu(menu)
 // manage messages to the user
 var messages = require('./lib/manage-messages.js')
 
-function handleError (type) {
+function errorMessage (type) {
   return (err) => 
     messages.error(type + ': ' + err)
 }
 
+// setup reset button
+document.getElementById('reset').onclick = () => {
+  if (userScriptPath)
+    rendererBootstrap(userScriptPath)
+  return
+}
+
 // a-bit-of handles the user scripts
 var loadFiles = require('./lib/load-files.js')
+// keep a ref around to the last path the user succesfully loaded
+var userScriptPath;
 // this gets executed by main process
 // after the user loads a script file.
 function rendererBootstrap (path) {
+  // clear views div
+  document.getElementById('views').innerHTML = ''
+  // make new components from the files
   var componentStream = loadFiles.wireComponents(path)
+  // save a ref to the path
+  userScriptPath = path
   // when the streams components come through,
   componentStream.onValue((cs) => {
     // setup erroring for each stream
-    cs.originS.onError(handleError('Error in Origin'))
-    cs.transformS.onError(handleError('Error in Transform'))
-    cs.endpointS.onError(handleError('Error in Endpoint'))
+    cs.originS.onError(errorMessage('Error in Origin'))
+    cs.transformS.onError(errorMessage('Error in Transform'))
+    cs.endpointS.onError(errorMessage('Error in Endpoint'))
     // attach them to each other when they all come in
     Kefir
       .combine([cs.originS, cs.transformS, cs.endpointS])
       .onValue(components => {
-        components[0]
-          .attach(components[1])
-          .attach(components[2])
+        // attach origin > transform > endpoint
+        components[0].attach(components[1]).attach(components[2])
       })
     // setup notifications for new refreshes
     Kefir
@@ -48,6 +61,6 @@ function rendererBootstrap (path) {
       .onValue(messages.success)
   })
   // setup erroring for file loading
-  componentStream.onError(handleError('loading files'))
+  componentStream.onError(errorMessage('loading files'))
 }
 
